@@ -1,0 +1,3 @@
+# jQuery.deferredPipeline
+
+under dev.

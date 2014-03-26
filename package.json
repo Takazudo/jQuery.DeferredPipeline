@@ -1,0 +1,17 @@
+{
+  "name": "jQuery.deferredPipeline",
+  "version": "0.0.0",
+  "author": "'Takazudo' Takeshi Takatsudo <takazudo@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Takazudo/jQuery.deferredPipeline"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.4",
+    "grunt-mocha": "^0.4.10",
+    "grunt-contrib-coffee": "^0.10.1",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-contrib-concat": "^0.3.0",
+    "grunt-contrib-uglify": "^0.4.0"
+  }
+}
