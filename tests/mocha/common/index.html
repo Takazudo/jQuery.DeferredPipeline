@@ -20,7 +20,8 @@
 
   <script>
     mocha.checkLeaks();
-    mocha.globals(['jQuery', '$']);
+    mocha.globals(['jQuery', '$', '__screenCapturePageContext__']);
+    // https://github.com/visionmedia/mocha/issues/695
     mocha.run();
   </script>
 </body>
