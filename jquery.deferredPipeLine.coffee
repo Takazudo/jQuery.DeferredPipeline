@@ -1,17 +1,18 @@
 do ($ = jQuery) ->
 
+  # from global
+  EveEve = window.EveEve
+
   # define namespaces
   ns = {}
   ns.util = {}
 
-  # messages
-  ns.MSG =
-    error_no_deferred: 'Error: registered function should return a deferred';
+  # ============================================================
+  # tiny utils
 
-  # from global
-  EveEve = window.EveEve
+  # wait
+  # just a setTimeout wrapper
 
-  # tiny util
   wait = (time) ->
     return $.Deferred (defer) ->
       setTimeout ->
@@ -19,7 +20,19 @@ do ($ = jQuery) ->
       , time
 
   # ============================================================
+  # const vals
+
+  # messages
+
+  ns.MESSAGE =
+    error_no_deferred: 'Error: registered function should return a deferred'
+
+
+  # ============================================================
   # utils
+
+  # isPromise
+  # check whether passed var is promise or not
   
   ns.util.isPromise = (obj) ->
     if obj? and obj.then? and obj.done?
@@ -28,18 +41,57 @@ do ($ = jQuery) ->
 
   # ============================================================
   # Item
+  # handles one loading process.
 
   class ns.Item extends EveEve
+
+    # default option vars
+
+    @defaults =
+      done: null
+      fail: null
+      complete: null
+
+    # Item needs to receive main function.
+    #
+    # * This passed function will be queued to the pipeline (ns.Pipeline).
+    # * This function needs to return promise object.
+    # * Pipeline knows the end of the async process by the promise's resolve stats.
+    #
+    # new ns.Item (stats) ->
+    #   d = $.Deferred()
+    #   doAsync ->
+    #     d.resolve() # or .reject()
+    #   return d.promise()
+    # ,
+    #   done: (doneArgs) ->
+    #     console.log 'process done!'
+    #   fail: (failArgs, stats) ->
+    #     console.log 'process failed!'
+    #   complete: (doneOrFailArgs, stats) ->
+    #     console.log 'process complete!'
+    #
+    # `options` is the optional parameter.
+    # `options` can have the following props.
+    #
+    # * done: [function] // invoked after main function was resolved.
+    # * fail: [function] // invoked when the main function was rejected or aborted
     
-    constructor: (fn, @options={}) ->
+    constructor: (fn, options) ->
+      @options = $.extend {}, ns.Item.defaults, options
       @started = false
       @running = false
       @stopped = false
-      @defer = $.Deferred()
       @_fn = fn
 
+    # === privates ===
+    
+    # helpers
+
     _attachNoDeferredMessage: (obj) ->
-      obj.msg = ns.MSG.error_no_deferred
+      obj.msg = ns.MESSAGE.error_no_deferred
+
+    # success, fail, complete trigger methods
 
     _triggerSuccess: (doneArgs) ->
       @stopped = true
@@ -61,7 +113,12 @@ do ($ = jQuery) ->
         successed: successed
       if noDeferred then @_attachNoDeferredMessage data
       @trigger 'complete', doneOrFailArgs, data
-      @defer.resolve()
+
+    # === public ===
+    
+    destroy: ->
+      @off()
+      @_fn = null
 
     stop: ->
       if @stopped
@@ -70,37 +127,50 @@ do ($ = jQuery) ->
       @_completeStats?.aborted = true
       @_triggerFail [], true
 
-    run: ->
+    run: -> # start the things!
 
-      @_completeStats =
-        aborted: false
+      # this is the communicator about aborted stats.
+      # main function can know if the async process was aborted or not.
+      @_completeStats = aborted: false
+
       @started = true
 
+      # if already stopped before `run`, I do nothing.
       if @stopped and (not @running)
         return
       
+      # or Let's keep runnning
       @running = true
+
+      # invoke the main function
       promise = @_fn @_completeStats
 
-      if ns.util.isPromise promise
-        promise
-          .then =>
-            @running = false
-            if @stopped
-              return
-            @_triggerSuccess arguments
-          , =>
-            @running = false
-            @_triggerFail arguments, false
-      else
+      # if the main function did not return `promise`,
+      # we can't know the end of the process.
+      # I throw the error then.
+      unless ns.util.isPromise promise
         @running = false
         @_triggerFail [], false, false, true
+        return
+
+      # if there was no problem, do it.
+      promise
+        .then =>
+          @running = false
+          if @stopped
+            return
+          @_triggerSuccess arguments
+        , =>
+          @running = false
+          @_triggerFail arguments, false
 
   # ============================================================
   # Pipeline
 
   class ns.Pipeline extends EveEve
     
+    # default option vars
+
     @defaults =
       pipeSize: 3
 
@@ -109,34 +179,91 @@ do ($ = jQuery) ->
       @options = $.extend {}, ns.Pipeline.defaults, options
       @_items = []
 
-    add: (fn, options) ->
-      item = new ns.Item fn, options
-      item.on 'success', (data) =>
-        @trigger 'itemSuccess', data
-      item.on 'fail', (data) =>
-        @trigger 'itemFail', data
-      item.on 'complete', (data) =>
-        wasTheLastItem = @_items.length is 1
-        @removeItem item
-        @completeCount += 1
-        @trigger 'itemComplete', data
-        if wasTheLastItem
-          @running = false
-          (wait 0).done =>
-            @trigger 'allComplete'
-        else
-          if @_stopItemsInProgress
-            @once 'stopItemsComplete', =>
-              @tryToRunNextItem()
-          else
-            @tryToRunNextItem()
-      @_items.push item
+    # === private ===
 
-    findNextPendingItem: ->
+    # internal stopping items' helpers
+    
+    _beforeStoppingItems: ->
+      @_stoppingItemsInProgress = true
+      @trigger 'startStoppingItems'
+
+    _afterStoppingItems: ->
+      @_stoppingItemsInProgress = false
+      @trigger 'endStoppingItems'
+    
+    # item completion handing helpres
+
+    _handleTheLastItemCompletion: ->
+      @running = false
+      (wait 0).done =>
+        @trigger 'allComplete'
+
+    _handleNextRun: ->
+      if @_stoppingItemsInProgress
+        @once 'endStoppingItems', => @_tryToRunNextItem()
+      else
+        @_tryToRunNextItem()
+
+    # item operation helpers
+
+    _findNextPendingItem: ->
       for item in @_items
         if item.started is false
           return item
       return null
+
+    _removeItem: (item) ->
+      refreshed = []
+      for current in @_items
+        refreshed.push current unless current is item
+      @_items = refreshed
+      item.destroy()
+
+    _tryToRunNextItem: ->
+      pipeSize = @options.pipeSize
+      runningCount = @getCurrentRunningItemsCount()
+      hitLimit = false
+      runOne = =>
+        next = @_findNextPendingItem()
+        if next?
+          next.run()
+        else
+          hitLimit = true
+        runningCount = @getCurrentRunningItemsCount()
+      while (runningCount < pipeSize) and (not hitLimit)
+        runOne()
+    
+    # === public ===
+    
+    destroy: ->
+      @stopAll()
+      @off()
+      for item in @_items
+        item.destroy()
+      @_items = null
+
+    add: (fn, options) ->
+
+      item = new ns.Item fn, options
+
+      item.on 'success', (doneArgs) =>
+        @trigger 'itemSuccess', doneArgs
+
+      item.on 'fail', (failArgs, data) =>
+        @trigger 'itemFail', failArgs, data
+
+      item.on 'complete', (doneOrFailArgs, data) =>
+        wasTheLastItem = @_items.length is 1
+        @_removeItem item
+        @completeCount += 1
+        @trigger 'itemComplete', doneOrFailArgs, data
+        if wasTheLastItem
+          @_handleTheLastItemCompletion()
+        else
+          @_handleNextRun()
+      @_items.push item
+    
+    # tells you the count of the running items
 
     getCurrentRunningItemsCount: ->
       n = 0
@@ -145,26 +272,6 @@ do ($ = jQuery) ->
           n += 1
       return n
 
-    tryToRunNextItem: ->
-      pipeSize = @options.pipeSize
-      runningCount = @getCurrentRunningItemsCount()
-      hitLimit = false
-      runOne = =>
-        next = @findNextPendingItem()
-        if next?
-          next.run()
-        else
-          hitLimit = true
-        runningCount = @getCurrentRunningItemsCount()
-      while (runningCount < pipeSize) and (not hitLimit)
-        runOne()
-
-    removeItem: (item) ->
-      refreshed = []
-      for current in @_items
-        refreshed.push current unless current is item
-      @_items = refreshed
-
     size: ->
       return @_items.length
 
@@ -172,32 +279,24 @@ do ($ = jQuery) ->
       return if @running
       return unless @_items.length
       @running = true
-      @tryToRunNextItem()
+      @_tryToRunNextItem()
     
     stopAll: ->
-      @_stopItemsInProgress = true
+      @_beforeStoppingItems()
       for item in @_items
         item.stop()
-      @_stopItemsInProgress = false
-      @trigger 'stopItemsComplete'
+      @_afterStoppingItems()
 
     stopAllWithoutTheLast: ->
-      @_stopItemsInProgress = true
+      @_beforeStoppingItems()
       theLastItem = @_items[@_items.length - 1]
       for item in @_items
         unless item is theLastItem
           item.stop()
-      @_stopItemsInProgress = false
-      @trigger 'stopItemsComplete'
+      @_afterStoppingItems()
       
-    destroy: ->
-      @stopAll()
-      @off()
-      @_items = null
-
   # ============================================================
   # globalify
 
   $.DeferredPipelineNs = ns
   $.DeferredPipeline = ns.Pipeline
-
