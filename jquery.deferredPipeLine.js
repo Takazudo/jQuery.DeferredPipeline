@@ -1,6 +1,6 @@
 /*! jQuery.deferredPipeline (https://github.com/Takazudo/jQuery.deferredPipeline)
  * lastupdate: 2014-03-27
- * version: 0.0.0
+ * version: 0.1.0
  * author: 'Takazudo' Takeshi Takatsudo <takazudo@gmail.com>
  * License: MIT */
 (function() {
