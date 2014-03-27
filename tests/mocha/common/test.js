@@ -164,7 +164,7 @@
         });
         return pipeline.run();
       });
-      return it('receives aborted status about `fail` option callback', function(done) {
+      it('receives aborted status about `fail` option callback', function(done) {
         var fn1, pipeline, spy_fail, spy_fn1;
         spy_fn1 = sinon.spy();
         spy_fail = sinon.spy();
@@ -196,6 +196,58 @@
           (expect(spy_fail.calledOnce)).to.be(true);
           return done();
         });
+      });
+      it('runs `complete` option callback when resolved', function(done) {
+        var fn1, pipeline, spy_fn1;
+        spy_fn1 = sinon.spy();
+        fn1 = function() {
+          var d;
+          d = $.Deferred();
+          (wait(10)).done(function() {
+            spy_fn1();
+            return d.resolve('arg1', 'arg2');
+          });
+          return d.promise();
+        };
+        pipeline = new $.DeferredPipelineNs.Pipeline({
+          pipeSize: 1
+        });
+        pipeline.add(fn1, {
+          complete: function(doneArgs) {
+            (expect(spy_fn1.called)).to.be(true);
+            (expect(doneArgs[0])).to.be('arg1');
+            (expect(doneArgs[1])).to.be('arg2');
+            return done();
+          }
+        });
+        return pipeline.run();
+      });
+      return it('runs `fail` option callback', function(done) {
+        var fn1, pipeline, spy_fn1;
+        spy_fn1 = sinon.spy();
+        fn1 = function() {
+          var d;
+          d = $.Deferred();
+          (wait(10)).done(function() {
+            spy_fn1();
+            return d.reject('arg1', 'arg2');
+          });
+          return d.promise();
+        };
+        pipeline = new $.DeferredPipelineNs.Pipeline({
+          pipeSize: 1
+        });
+        pipeline.add(fn1, {
+          complete: function(failArgs, data) {
+            console.log(data);
+            (expect(spy_fn1.called)).to.be(true);
+            (expect(data.aborted)).to.be(false);
+            (expect(failArgs[0])).to.be('arg1');
+            (expect(failArgs[1])).to.be('arg2');
+            return done();
+          }
+        });
+        return pipeline.run();
       });
     });
     describe('pipeSize patterns', function() {

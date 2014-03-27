@@ -102,7 +102,7 @@ do ($ = jQuery) ->
     _triggerFail: (failArgs, aborted = false, noDeferred = false) ->
       @stopped = true
       data = {}
-      data.aborted = if aborted then true else false
+      data.aborted = aborted
       if noDeferred then @_attachNoDeferredMessage data
       @options.fail?(failArgs, data)
       @trigger 'fail', failArgs, data
@@ -111,7 +111,9 @@ do ($ = jQuery) ->
     _triggerComplete: (doneOrFailArgs, successed, aborted = false, noDeferred = false) ->
       data =
         successed: successed
+        aborted: aborted
       if noDeferred then @_attachNoDeferredMessage data
+      @options.complete?(doneOrFailArgs, data)
       @trigger 'complete', doneOrFailArgs, data
 
     # === public ===

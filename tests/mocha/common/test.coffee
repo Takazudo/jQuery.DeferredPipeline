@@ -177,6 +177,50 @@ describe 'ns.Pipeline', ->
         (expect spy_fail.calledOnce).to.be true
         done()
 
+    it 'runs `complete` option callback when resolved', (done) ->
+
+      spy_fn1 = sinon.spy()
+
+      fn1 = ->
+        d = $.Deferred()
+        (wait 10).done ->
+          spy_fn1()
+          d.resolve('arg1', 'arg2')
+        return d.promise()
+
+      pipeline = new $.DeferredPipelineNs.Pipeline
+        pipeSize: 1
+      pipeline.add fn1,
+        complete: (doneArgs) ->
+          (expect spy_fn1.called).to.be true
+          (expect doneArgs[0]).to.be 'arg1'
+          (expect doneArgs[1]).to.be 'arg2'
+          done()
+      pipeline.run()
+
+    it 'runs `fail` option callback', (done) ->
+
+      spy_fn1 = sinon.spy()
+
+      fn1 = ->
+        d = $.Deferred()
+        (wait 10).done ->
+          spy_fn1()
+          d.reject('arg1', 'arg2')
+        return d.promise()
+
+      pipeline = new $.DeferredPipelineNs.Pipeline
+        pipeSize: 1
+      pipeline.add fn1,
+        complete: (failArgs, data) ->
+          console.log data
+          (expect spy_fn1.called).to.be true
+          (expect data.aborted).to.be false
+          (expect failArgs[0]).to.be 'arg1'
+          (expect failArgs[1]).to.be 'arg2'
+          done()
+      pipeline.run()
+
   describe 'pipeSize patterns', ->
 
     randomNum = -> Math.floor(Math.random() * 10)

@@ -69,7 +69,7 @@
         }
         this.stopped = true;
         data = {};
-        data.aborted = aborted ? true : false;
+        data.aborted = aborted;
         if (noDeferred) {
           this._attachNoDeferredMessage(data);
         }
@@ -81,7 +81,7 @@
       };
 
       Item.prototype._triggerComplete = function(doneOrFailArgs, successed, aborted, noDeferred) {
-        var data;
+        var data, _base;
         if (aborted == null) {
           aborted = false;
         }
@@ -89,10 +89,14 @@
           noDeferred = false;
         }
         data = {
-          successed: successed
+          successed: successed,
+          aborted: aborted
         };
         if (noDeferred) {
           this._attachNoDeferredMessage(data);
+        }
+        if (typeof (_base = this.options).complete === "function") {
+          _base.complete(doneOrFailArgs, data);
         }
         return this.trigger('complete', doneOrFailArgs, data);
       };
