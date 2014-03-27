@@ -6,6 +6,10 @@ manage async processes.
 
 * [imgs' preload](http://takazudo.github.io/jQuery.DeferredPipeline/demos/1/)
 
+## Tests
+
+* [all](http://takazudo.github.io/jQuery.DeferredPipeline/tests/mocha/common/)
+
 ## What this does
 
 Basically, if you call 4 async processes, It's like this.
