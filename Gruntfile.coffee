@@ -28,8 +28,8 @@ module.exports = (grunt) ->
     coffee:
 
       libself:
-        src: [ 'jquery.deferredPipeLine.coffee' ]
-        dest: 'jquery.deferredPipeLine.js'
+        src: [ 'jquery.deferredPipeline.coffee' ]
+        dest: 'jquery.deferredPipeline.js'
 
       test_common:
         src: [ 'tests/mocha/common/test.coffee' ]
@@ -49,7 +49,7 @@ module.exports = (grunt) ->
         banner: '<%= banner %>'
       libself:
         src: '<%= concat.banner.dest %>'
-        dest: 'jquery.deferredPipeLine.min.js'
+        dest: 'jquery.deferredPipeline.min.js'
 
     mocha:
 
