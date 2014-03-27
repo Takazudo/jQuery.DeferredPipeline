@@ -226,7 +226,7 @@
       Pipeline.prototype._tryToRunNextItem = function() {
         var hitLimit, pipeSize, runOne, runningCount, _results;
         pipeSize = this.options.pipeSize;
-        runningCount = this.getCurrentRunningItemsCount();
+        runningCount = this.runnningItemsCount();
         hitLimit = false;
         runOne = (function(_this) {
           return function() {
@@ -237,7 +237,7 @@
             } else {
               hitLimit = true;
             }
-            return runningCount = _this.getCurrentRunningItemsCount();
+            return runningCount = _this.runnningItemsCount();
           };
         })(this);
         _results = [];
@@ -289,7 +289,7 @@
         return this._items.push(item);
       };
 
-      Pipeline.prototype.getCurrentRunningItemsCount = function() {
+      Pipeline.prototype.runnningItemsCount = function() {
         var item, n, _i, _len, _ref;
         n = 0;
         _ref = this._items;

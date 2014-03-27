@@ -248,7 +248,7 @@ describe 'ns.Pipeline', ->
             pipeline = new $.DeferredPipelineNs.Pipeline options
             addWaitFns itemsCount, pipeline, spy
             pipeline.on 'itemComplete', ->
-              count = pipeline.getCurrentRunningItemsCount()
+              count = pipeline.runnningItemsCount()
               (expect count <= pipeSize).to.be true
             pipeline.on 'allComplete', ->
               (expect spy.callCount).to.be itemsCount
