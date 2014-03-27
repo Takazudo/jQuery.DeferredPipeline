@@ -294,7 +294,7 @@
                 addWaitFns(itemsCount, pipeline, spy);
                 pipeline.on('itemComplete', function() {
                   var count;
-                  count = pipeline.runnningItemsCount();
+                  count = pipeline.countRunningItems();
                   return (expect(count <= pipeSize)).to.be(true);
                 });
                 pipeline.on('allComplete', function() {

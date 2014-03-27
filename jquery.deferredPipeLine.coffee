@@ -222,7 +222,7 @@ do ($ = jQuery) ->
 
     _tryToRunNextItem: ->
       pipeSize = @options.pipeSize
-      runningCount = @runnningItemsCount()
+      runningCount = @countRunningItems()
       hitLimit = false
       runOne = =>
         next = @_findNextPendingItem()
@@ -230,7 +230,7 @@ do ($ = jQuery) ->
           next.run()
         else
           hitLimit = true
-        runningCount = @runnningItemsCount()
+        runningCount = @countRunningItems()
       while (runningCount < pipeSize) and (not hitLimit)
         runOne()
     
@@ -266,7 +266,7 @@ do ($ = jQuery) ->
     
     # tells you the count of the running items
 
-    runnningItemsCount: ->
+    countRunningItems: ->
       n = 0
       for item in @_items
         if item.running
