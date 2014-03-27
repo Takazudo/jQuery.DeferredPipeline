@@ -154,6 +154,8 @@ do ($ = jQuery) ->
         @_triggerFail [], false, false, true
         return
 
+      @trigger 'run'
+
       # if there was no problem, do it.
       promise
         .then =>
@@ -191,6 +193,7 @@ do ($ = jQuery) ->
     _afterStoppingItems: ->
       @_stoppingItemsInProgress = false
       @trigger 'endStoppingItems'
+      @trigger 'stop'
     
     # item completion handing helpres
 
@@ -247,6 +250,9 @@ do ($ = jQuery) ->
 
       item = new ns.Item fn, options
 
+      item.on 'run', (doneArgs) =>
+        @trigger 'itemRun', doneArgs
+
       item.on 'success', (doneArgs) =>
         @trigger 'itemSuccess', doneArgs
 
@@ -280,6 +286,7 @@ do ($ = jQuery) ->
       return if @running
       return unless @_items.length
       @running = true
+      @trigger 'run'
       @_tryToRunNextItem()
     
     stopAll: ->

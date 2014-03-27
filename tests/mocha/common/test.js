@@ -492,10 +492,11 @@
       };
       describe('stopAll method', function() {
         it('stop all runnning items', function(done) {
-          var options, pipeline, spy_complete, spy_fail, spy_success;
+          var options, pipeline, spy_complete, spy_fail, spy_stop, spy_success;
           spy_success = sinon.spy();
           spy_fail = sinon.spy();
           spy_complete = sinon.spy();
+          spy_stop = sinon.spy();
           options = {
             pipeSize: 3
           };
@@ -515,10 +516,14 @@
           pipeline.on('itemFail', function() {
             return spy_fail();
           });
+          pipeline.on('stop', function() {
+            return spy_stop();
+          });
           pipeline.on('allComplete', function() {
             (expect(spy_success.callCount)).to.be(10);
             (expect(spy_fail.callCount)).to.be(10);
             (expect(spy_complete.callCount)).to.be(20);
+            (expect(spy_stop.calledOnce)).to.be(true);
             return done();
           });
           return pipeline.run();
@@ -548,11 +553,12 @@
       });
       describe('stopAllWithoutTheLast method', function() {
         return it('stops all without the last one', function(done) {
-          var options, pipeline, spy_complete, spy_fail, spy_success, spy_theLastOne;
+          var options, pipeline, spy_complete, spy_fail, spy_stop, spy_success, spy_theLastOne;
           spy_theLastOne = sinon.spy();
           spy_success = sinon.spy();
           spy_fail = sinon.spy();
           spy_complete = sinon.spy();
+          spy_stop = sinon.spy();
           options = {
             pipeSize: 3
           };
@@ -581,11 +587,15 @@
           pipeline.on('itemFail', function() {
             return spy_fail();
           });
+          pipeline.on('stop', function() {
+            return spy_stop();
+          });
           pipeline.on('allComplete', function() {
             (expect(spy_theLastOne.calledOnce)).to.be(true);
             (expect(spy_success.callCount)).to.be(11);
             (expect(spy_fail.callCount)).to.be(10);
             (expect(spy_complete.callCount)).to.be(21);
+            (expect(spy_stop.calledOnce)).to.be(true);
             return done();
           });
           return pipeline.run();

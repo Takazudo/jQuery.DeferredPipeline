@@ -134,6 +134,7 @@
           this._triggerFail([], false, false, true);
           return;
         }
+        this.trigger('run');
         return promise.then((function(_this) {
           return function() {
             _this.running = false;
@@ -173,7 +174,8 @@
 
       Pipeline.prototype._afterStoppingItems = function() {
         this._stoppingItemsInProgress = false;
-        return this.trigger('endStoppingItems');
+        this.trigger('endStoppingItems');
+        return this.trigger('stop');
       };
 
       Pipeline.prototype._handleTheLastItemCompletion = function() {
@@ -262,6 +264,11 @@
       Pipeline.prototype.add = function(fn, options) {
         var item;
         item = new ns.Item(fn, options);
+        item.on('run', (function(_this) {
+          return function(doneArgs) {
+            return _this.trigger('itemRun', doneArgs);
+          };
+        })(this));
         item.on('success', (function(_this) {
           return function(doneArgs) {
             return _this.trigger('itemSuccess', doneArgs);
@@ -314,6 +321,7 @@
           return;
         }
         this.running = true;
+        this.trigger('run');
         return this._tryToRunNextItem();
       };
 

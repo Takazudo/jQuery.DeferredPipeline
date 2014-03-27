@@ -420,6 +420,7 @@ describe 'ns.Pipeline', ->
         spy_success = sinon.spy()
         spy_fail = sinon.spy()
         spy_complete = sinon.spy()
+        spy_stop = sinon.spy()
 
         options = pipeSize: 3
         pipeline = new $.DeferredPipelineNs.Pipeline options
@@ -438,6 +439,9 @@ describe 'ns.Pipeline', ->
         pipeline.on 'itemFail', ->
           spy_fail()
 
+        pipeline.on 'stop', ->
+          spy_stop()
+
         pipeline.on 'allComplete', ->
           # console.log spy_success.callCount
           # console.log spy_fail.callCount
@@ -445,6 +449,7 @@ describe 'ns.Pipeline', ->
           (expect spy_success.callCount).to.be 10
           (expect spy_fail.callCount).to.be 10
           (expect spy_complete.callCount).to.be 20
+          (expect spy_stop.calledOnce).to.be true
           done()
 
         pipeline.run()
@@ -477,6 +482,7 @@ describe 'ns.Pipeline', ->
         spy_success = sinon.spy()
         spy_fail = sinon.spy()
         spy_complete = sinon.spy()
+        spy_stop = sinon.spy()
 
         options =
           pipeSize: 3
@@ -504,6 +510,9 @@ describe 'ns.Pipeline', ->
         pipeline.on 'itemFail', ->
           spy_fail()
 
+        pipeline.on 'stop', ->
+          spy_stop()
+
         pipeline.on 'allComplete', ->
           #console.log 'allComplete!'
           #console.log spy_success.callCount
@@ -514,6 +523,7 @@ describe 'ns.Pipeline', ->
           (expect spy_success.callCount).to.be 11
           (expect spy_fail.callCount).to.be 10
           (expect spy_complete.callCount).to.be 21
+          (expect spy_stop.calledOnce).to.be true
           done()
 
         pipeline.run()
