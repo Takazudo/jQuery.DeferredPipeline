@@ -10,7 +10,6 @@ do ($ = jQuery) ->
   # ============================================================
   # tiny utils
 
-  # wait
   # just a setTimeout wrapper
 
   wait = (time) ->
@@ -74,8 +73,8 @@ do ($ = jQuery) ->
     # `options` is the optional parameter.
     # `options` can have the following props.
     #
-    # * done: [function] // invoked after main function was resolved.
-    # * fail: [function] // invoked when the main function was rejected or aborted
+    # * done: [function] // called after main function was resolved.
+    # * fail: [function] // called when the main function was rejected or aborted
     
     constructor: (fn, options) ->
       @options = $.extend {}, ns.Item.defaults, options
@@ -144,7 +143,7 @@ do ($ = jQuery) ->
       # or Let's keep runnning
       @running = true
 
-      # invoke the main function
+      # call the main function
       promise = @_fn @_completeStats
 
       # if the main function did not return `promise`,
