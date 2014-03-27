@@ -60,7 +60,7 @@
         <leftArrow>false</leftArrow>
       </controlProperties>
     </control>
-    <control controlID="17" controlTypeID="com.balsamiq.mockups::Arrow" x="909" y="274" w="112" h="10" measuredW="150" measuredH="100" zOrder="12" locked="false" isInGroup="-1">
+    <control controlID="17" controlTypeID="com.balsamiq.mockups::Arrow" x="935" y="274" w="86" h="10" measuredW="150" measuredH="100" zOrder="12" locked="false" isInGroup="-1">
       <controlProperties>
         <leftArrow>false</leftArrow>
       </controlProperties>
