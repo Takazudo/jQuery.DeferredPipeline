@@ -23,7 +23,7 @@ With jQuery.DeferredPipeline, you can queue functions like this.
 ```javascript
 var pipeline = new $.DeferredPipeline({ pipeSize: 1 });
 
-// do things like this 4 times
+// queue function like this 4 times
 pipeline.add(function() {
   var d = $.Deferred();
   doAsync(function() {
@@ -43,7 +43,7 @@ This is just a queue. You can run specified counts' async processes at the same 
 // 2 size pipeline
 var pipeline = new $.DeferredPipeline({ pipeSize: 2 });
 
-// do things like this 4 times
+// queue function like this 8 times
 pipeline.add(function() {
   var d = $.Deferred();
   doAsync(function() {
@@ -74,7 +74,7 @@ like the explanation above, do
 ```javascript
 var pipeline = new $.DeferredPipeline({ pipeSize: 2 }); // specifiy pipeSize as option
 
-// do things like this 4 times
+// queue functions like below
 pipeline.add(function() {
   var d = $.Deferred();
   doAsync(function() {
