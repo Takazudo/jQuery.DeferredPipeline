@@ -206,7 +206,7 @@ Use
 
  * [CoffeeScript][coffeescript]
  * [grunt][grunt]
- * [Mocha](http://visionmedia.github.io/mocha/) for tests
+ * [Mocha](http://mochajs.org/) for tests
  * [LearnBoost/expect.js](https://github.com/LearnBoost/expect.js/) for tests
 
 [coffeescript]: http://coffeescript.org "CoffeeScript"
